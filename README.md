@@ -12,7 +12,7 @@
 6. [DAX Measures Reference](#dax-measures-reference)
 7. [Customer Segmentation Logic](#customer-segmentation-logic)
 8. [Dashboard Guide](#dashboard-guide)
-9. [Appendix](#appendix)
+9. [Appendix](#appendix-1)
 
 ---
 
@@ -849,40 +849,383 @@ The analysis is presented across 4 main pages:
 - Which segments are growing/declining?
 - What channels bring high-value segments?
 - Which products are popular with Champions?
+- How do segment characteristics differ?
+- Where should we focus retention efforts?
+
+### Page 3: Customer Detail
+
+**Purpose**: Granular customer-level analysis
+
+**Key Visuals**:
+- Customer lifecycle distribution (Stacked area)
+- Churn status breakdown (Donut)
+- Geographic distribution by segment (Map or bar chart)
+- Average days since last purchase by segment (Bar)
+- Customer acquisition trends (Line chart)
+- Top customers by revenue (Table with drill-through)
+
+**Key Questions Answered**:
+- How is our customer base aging?
+- Where are our best customers located?
+- What's the typical customer journey timeline?
+- Which specific customers need immediate attention?
+- How long do customers typically wait between purchases?
+
+### Page 4: Product Analysis
+
+**Purpose**: Product and channel performance insights
+
+**Key Visuals**:
+- Revenue by product category (Bar chart)
+- Most popular products by segment (Matrix)
+- Billing cycle performance (Clustered column)
+- Discount code effectiveness (Table)
+- Channel performance metrics (Matrix)
+- Product mix by customer segment (Stacked bar)
+- Refund analysis by product/channel (Table)
+
+**Key Questions Answered**:
+- Which products generate most revenue?
+- Do annual plans bring higher customer value?
+- Which discount codes drive repeat purchases?
+- What's the refund rate by product?
+- Which channels are most cost-effective?
+- What products do loyal customers prefer?
+
+### Dashboard Filters (Available on All Pages)
+
+**Global Filters**:
+- Date range (Year, Quarter, Month)
+- Customer Segment
+- Acquisition Channel
+- Country/Region
+- Product Category
+- Billing Cycle
+
+**Interactivity**:
+- Click any visual to cross-filter others
+- Drill-through from summary to detail
+- Hover for detailed tooltips
+- Export data to Excel for further analysis
+
+### Dashboard Best Practices
+
+**For Stakeholders**:
+1. Start with Overview page for executive summary
+2. Use filters to focus on specific time periods or segments
+3. Click on segments in visuals to filter the entire page
+4. Look for red indicators (at-risk metrics) requiring action
+
+**For Analysis**:
+1. Compare segments using the Segment Analysis page
+2. Drill into specific customers on Customer Detail page
+3. Analyze product performance on Product Analysis page
+4. Use date filters to identify trends over time
+
+**For Action Items**:
+1. Identify at-risk high-value customers
+2. Determine which channels to invest in
+3. Find products with high attach rates for bundling
+4. Spot discount codes that drive repeat purchases
+5. Locate geographic opportunities for expansion
 
 ---
 
 ## Appendix
 
-### File Structure
+### A. Technical Specifications
+
+**Tools Used**:
+- **Data Cleaning**: Excel Power Query
+- **RFM Calculations**: Python 3.x with pandas
+- **Visualization**: Microsoft Power BI Desktop
+- **Data Storage**: CSV files
+
+**Data Volume**:
+- Customer records: 4,000
+- Transaction records: 48,000
+- Time period: 2024-2025
+- File size: ~8.1 MB (events table)
+
+**Relationships**:
 ```
-/Test/
-├── README.md (this file)
-├── rfm_customer_segments.csv (exported RFM results)
-├── rfm.csv (intermediate RFM data)
-├── Manufacturing_Line_Productivity.xlsx
-├── data_dictionary.csv
-├── RFM Analysis.ipynb (Jupyter notebook with analysis)
-└── output/ (directory for analysis outputs)
+Customers (1) ─────────────── (*) Events
+  customer_id                      customer_id
+
+Products (1) ──────────────── (*) Events
+  product_id                       product_id
+
+Date Table (1) ────────────── (*) Events
+  Date                             event_date
 ```
 
-### Key Files Description
+### B. Python Code for RFM Calculation
 
-- **README.md**: Complete documentation of the analysis
-- **rfm_customer_segments.csv**: Final RFM customer segments with all scores and classifications
-- **RFM Analysis.ipynb**: Python notebook containing all RFM calculations and data processing
-- **data_dictionary.csv**: Data dictionary for reference tables
+```python
+import pandas as pd
+from datetime import datetime
 
-### Contact & Support
+# Load data
+df_events = pd.read_csv('events.csv')
+df_customer = pd.read_csv('customers.csv')
 
-For questions or clarifications about this analysis, please reach out to the Data Analytics team.
+# Convert date columns
+df_events['event_date'] = pd.to_datetime(df_events['event_date'])
+df_customer['signup_date'] = pd.to_datetime(df_customer['signup_date'])
 
-### Version History
+# Set reference date
+reference_date = df_events['event_date'].max()
 
-| Version | Date | Changes |
-|---------|------|---------|
-| 1.0 | 2025-11-20 | Initial release with complete RFM analysis framework |
+# ===== RECENCY CALCULATION =====
+customer_recency = df_events.groupby('customer_id')['event_date'].max().reset_index()
+customer_recency.columns = ['customer_id', 'last_purchase_date']
+customer_recency['recency_days'] = (reference_date - customer_recency['last_purchase_date']).dt.days
+
+def assign_recency_score(days):
+    if days <= 30: return 5
+    elif days <= 90: return 4
+    elif days <= 180: return 3
+    elif days <= 365: return 2
+    else: return 1
+
+customer_recency['recency_score'] = customer_recency['recency_days'].apply(assign_recency_score)
+
+# ===== FREQUENCY CALCULATION =====
+customer_frequency = df_events.groupby('customer_id').size().reset_index()
+customer_frequency.columns = ['customer_id', 'purchase_count']
+
+def assign_frequency_score(count):
+    if count >= 18: return 5
+    elif count >= 14: return 4
+    elif count >= 10: return 3
+    elif count >= 2: return 2
+    else: return 1
+
+customer_frequency['frequency_score'] = customer_frequency['purchase_count'].apply(assign_frequency_score)
+
+# ===== MONETARY CALCULATION =====
+customer_monetary = df_events.groupby('customer_id')['net_revenue_usd'].sum().reset_index()
+customer_monetary.columns = ['customer_id', 'total_revenue']
+
+def assign_monetary_score(revenue):
+    if revenue >= 15000: return 5
+    elif revenue >= 10584: return 4
+    elif revenue >= 7159: return 3
+    elif revenue >= 4393: return 2
+    else: return 1
+
+customer_monetary['monetary_score'] = customer_monetary['total_revenue'].apply(assign_monetary_score)
+
+# ===== COMBINE RFM =====
+rfm = customer_recency[['customer_id', 'recency_days', 'recency_score']]
+rfm = rfm.merge(customer_frequency[['customer_id', 'purchase_count', 'frequency_score']], on='customer_id')
+rfm = rfm.merge(customer_monetary[['customer_id', 'total_revenue', 'monetary_score']], on='customer_id')
+
+# Calculate total RFM score
+rfm['rfm_total_score'] = rfm['recency_score'] + rfm['frequency_score'] + rfm['monetary_score']
+
+# ===== SEGMENTATION =====
+def assign_segment(row):
+    # All customers are loyal (purchase_count >= 2)
+    if row['purchase_count'] < 2:
+        return "Not Loyal"
+    
+    rfm_score = row['rfm_total_score']
+    recency = row['recency_score']
+    frequency = row['frequency_score']
+    monetary = row['monetary_score']
+    
+    # Champions: Best on all metrics
+    if rfm_score >= 13 and recency >= 4 and frequency >= 4:
+        return "Champions"
+    
+    # High-Value Loyal: High spending + decent activity
+    elif monetary >= 4 and recency >= 3:
+        return "High-Value Loyal"
+    
+    # Loyal Frequent: High frequency + decent recency
+    elif frequency >= 4 and recency >= 3:
+        return "Loyal Frequent"
+    
+    # At-Risk Loyal: Haven't purchased recently
+    elif recency <= 2:
+        if monetary >= 4:
+            return "At-Risk High-Value"
+        else:
+            return "At-Risk Standard"
+    
+    # Standard Loyal: Everything else
+    else:
+        return "Standard Loyal"
+
+rfm['customer_segment'] = rfm.apply(assign_segment, axis=1)
+
+# ===== EXPORT =====
+rfm.to_csv('rfm_customer_segments.csv', index=False)
+
+# ===== VALIDATION =====
+print("\n=== RFM SUMMARY ===")
+print(rfm.head(10))
+print("\n=== SEGMENT DISTRIBUTION ===")
+print(rfm['customer_segment'].value_counts())
+print("\n=== SEGMENT PERFORMANCE ===")
+print(rfm.groupby('customer_segment').agg({
+    'customer_id': 'count',
+    'total_revenue': ['sum', 'mean'],
+    'purchase_count': 'mean',
+    'recency_days': 'mean',
+    'rfm_total_score': 'mean'
+}).round(2))
+
+print("\n✅ RFM analysis complete!")
+```
+
+### C. Data Quality Checks
+
+**Pre-Analysis Validation**:
+- ✅ No duplicate customer_id in customer table
+- ✅ No duplicate event_id in events table
+- ✅ All event customer_ids exist in customer table
+- ✅ All event product_ids exist in product table
+- ✅ Date ranges are valid (no future dates)
+- ✅ Revenue values are numeric
+- ✅ Refund flags are boolean
+
+**Post-Analysis Validation**:
+- ✅ All customers have RFM scores
+- ✅ RFM scores range from 1-5 as expected
+- ✅ Total RFM scores range from 3-15
+- ✅ All loyal customers have purchase_count >= 2
+- ✅ Segment distribution is reasonable
+- ✅ Revenue totals match between Python and Power BI
+
+### D. Known Limitations
+
+1. **Data Timeframe**: Analysis covers only 2024-2025, limiting long-term trend analysis
+2. **Refund Handling**: Refunds are included with negative revenue; alternative approach could exclude them entirely
+3. **Currency Conversion**: FX rates are point-in-time; actual rates may have fluctuated
+4. **Geographic Precision**: Country centroids used instead of exact customer locations
+5. **Seasonality**: Limited data may not capture full seasonal patterns
+6. **Product Lifecycle**: New products may not have enough history for reliable patterns
+
+### E. Future Enhancements
+
+**Potential Additions**:
+1. **Predictive Churn Model**: Machine learning to predict which customers will churn
+2. **Customer Lifetime Value (CLV)**: Predict future customer value
+3. **Cohort Analysis**: Analyze customer behavior by signup cohorts
+4. **Product Affinity Analysis**: Identify products frequently bought together
+5. **Channel Attribution**: Multi-touch attribution for customer journeys
+6. **Sentiment Analysis**: Integrate support ticket or review data
+7. **Real-time Alerts**: Automated notifications for at-risk high-value customers
+8. **A/B Testing Framework**: Test retention strategies scientifically
+
+**Technical Improvements**:
+1. **Automated Data Pipeline**: Schedule daily/weekly refreshes
+2. **Data Warehouse**: Migrate from CSV to proper database
+3. **Version Control**: Track changes to RFM logic and segments
+4. **API Integration**: Connect directly to operational systems
+5. **Mobile Dashboard**: Power BI mobile optimization
+
+### F. Glossary
+
+| Term | Definition |
+|------|------------|
+| **Acquisition Channel** | The method by which a customer first discovered or was acquired (e.g., Organic, Paid Search, Email, Social, Direct, Referral, Affiliate, Retail Media) |
+| **At-Risk Customer** | A loyal customer who hasn't purchased in 180+ days (recency score <= 2) |
+| **Billing Cycle** | The frequency of subscription billing: Monthly, Annual, or One-time |
+| **Champions** | Highest-value customer segment with RFM score >= 13 and high recency and frequency |
+| **Churn** | When a customer stops purchasing/renewing subscriptions |
+| **CLV (Customer Lifetime Value)** | Total revenue expected from a customer over their entire relationship |
+| **Cohort** | Group of customers who signed up in the same time period |
+| **Event** | A transaction record (order or invoice/renewal) |
+| **Frequency Score** | 1-5 rating based on purchase count (higher = more purchases) |
+| **High-Value Customer** | Customer with monetary score of 4 or 5 (spending $10,584+) |
+| **Loyal Customer** | Customer with 2 or more purchases (repeat buyer) |
+| **Monetary Score** | 1-5 rating based on total revenue (higher = more spending) |
+| **Recency Score** | 1-5 rating based on days since last purchase (higher = more recent) |
+| **Refund Rate** | Percentage of revenue that was refunded |
+| **RFM** | Recency, Frequency, Monetary - customer segmentation framework |
+| **RFM Total Score** | Sum of R + F + M scores, ranging from 3 to 15 |
+| **Segment** | Group of customers with similar RFM characteristics |
+| **Subscription** | Recurring purchase model (vs one-time purchase) |
+| **Win-back Campaign** | Marketing effort to re-engage churned or at-risk customers |
+
+### G. References & Resources
+
+**RFM Analysis**:
+- Bult, J. R., & Wansbeek, T. (1995). "Optimal Selection for Direct Mail." Marketing Science.
+- Hughes, A. M. (1994). "Strategic Database Marketing." Probus Publishing.
+
+**Customer Segmentation**:
+- Wedel, M., & Kamakura, W. A. (2000). "Market Segmentation: Conceptual and Methodological Foundations."
+- Kotler, P., & Keller, K. L. (2016). "Marketing Management" 15th Edition.
+
+**Subscription Business Metrics**:
+- Skok, D. "SaaS Metrics 2.0 – A Guide to Measuring and Improving What Matters." ForEntrepreneurs.
+- Zuora. "Subscription Economy Index." Annual reports on subscription business trends.
+
+**Power BI Resources**:
+- Microsoft Learn: Power BI Documentation
+- SQLBI: DAX Patterns and Best Practices
+- Enterprise DNA: Power BI Training
+
+### H. Change Log
+
+| Date | Version | Changes | Author |
+|------|---------|---------|--------|
+| 2025-01-XX | 1.0 | Initial RFM analysis and dashboard creation | [Your Name] |
+| TBD | 1.1 | Add predictive churn model | Planned |
+| TBD | 1.2 | Integrate customer satisfaction data | Planned |
+
+### I. Contact & Support
+
+**For Questions About This Analysis**:
+- Project Owner: [Your Name]
+- Email: [Your Email]
+- Department: [Analytics/Marketing/BI]
+
+**For Dashboard Access**:
+- Power BI Service: [Workspace URL]
+- Refresh Schedule: [Daily/Weekly]
+- Data Steward: [Name]
+
+**For Data Issues**:
+- Data Engineering Team: [Contact]
+- Source System Owners: [Contacts]
 
 ---
 
-**Last Updated**: November 20, 2025
+## Summary
+
+This documentation provides a complete reference for the e-commerce customer loyalty analysis project. It covers:
+
+✅ **What**: Analysis of 4,000 loyal customers and 48,000 transactions
+✅ **Why**: Identify loyal customers and channels that drive repeat purchases
+✅ **How**: RFM scoring methodology with fixed ranges
+✅ **Results**: 6 customer segments with actionable strategies
+✅ **Tools**: Python (RFM) → Power BI (Visualization)
+
+### Key Takeaways
+
+1. **All customers in this analysis are loyal** (2+ purchases minimum)
+2. **RFM scoring uses fixed ranges** based on business context and data distribution
+3. **Six segments identified**: Champions, High-Value Loyal, Loyal Frequent, Standard Loyal, At-Risk High-Value, At-Risk Standard
+4. **Customer value varies widely**: $106 to $37,830 per customer
+5. **Frequency is consistent**: Average 12 purchases, median 12 purchases
+6. **Refunds are tracked but included** in calculations with negative impact
+
+### Next Steps
+
+1. **Review dashboard insights** with stakeholders
+2. **Implement segment-specific strategies** (see Segmentation Strategy section)
+3. **Set up monitoring** for key metrics (at-risk %, revenue at risk)
+4. **Launch win-back campaigns** for at-risk high-value customers
+5. **Optimize channel spending** based on segment acquisition patterns
+6. **Schedule regular reviews** (monthly/quarterly) to track progress
+
+---
+
+**Document Version**: 1.0  
+**Last Updated**: November 2025  
+**Status**: Complete
