@@ -4,15 +4,214 @@
 ---
 
 ## Table of Contents
-1. [Executive Summary](#executive-summary)
-2. [Data Dictionary](#data-dictionary)
-3. [Methodology](#methodology)
-4. [Key Metrics & Definitions](#key-metrics-definitions)
-5. [RFM Analysis Framework](#rfm-analysis-framework)
-6. [DAX Measures Reference](#dax-measures-reference)
-7. [Customer Segmentation Logic](#customer-segmentation-logic)
-8. [Dashboard Guide](#dashboard-guide)
-9. [Appendix](#appendix-1)
+1. [Data Story & Key Insights](#data-story--key-insights)
+2. [Executive Summary](#executive-summary)
+3. [Data Dictionary](#data-dictionary)
+4. [Methodology](#methodology)
+5. [Key Metrics & Definitions](#key-metrics-definitions)
+6. [RFM Analysis Framework](#rfm-analysis-framework)
+7. [DAX Measures Reference](#dax-measures-reference)
+8. [Customer Segmentation Logic](#customer-segmentation-logic)
+9. [Dashboard Guide](#dashboard-guide)
+10. [Appendix](#appendix)
+
+---
+
+## Data Story & Key Insights
+
+### 📊 The Challenge
+
+A global software retailer selling subscriptions and add-ons across analytics, design, collaboration, and AI products needed to understand their customer loyalty landscape. The key questions: **Who are their loyal customers? What drives them to keep coming back? And where should they focus their retention efforts?**
+
+### 🔍 What I Discovered
+
+#### The Good News: A Loyal Customer Base Driving Strong Revenue
+
+My analysis of **4,000 customers** and **48,000 transactions** over 2024-2025 revealed a robust business with **$31.20 million in total revenue**. The standout finding? **100% of their customer base are repeat buyers** (2+ purchases), demonstrating strong product-market fit in the subscription software space.
+
+**Revenue is growing year-over-year by 18.48%**, indicating healthy business expansion. However, the month-over-month decline of 14.25% signals potential seasonality that warrants monitoring.
+
+#### Customer Segmentation: Where the Value Lives
+
+Using RFM (Recency, Frequency, Monetary) analysis, we uncovered distinct customer segments with dramatically different value profiles:
+
+| Segment | Customers | Revenue | Avg Days Since Purchase |
+|---------|-----------|---------|-------------------------|
+| **Champions** | 476 (12%) | $7.19M (23%) | 21 days |
+| **High-Value Loyal** | 551 (14%) | $7.23M (23%) | 50 days |
+| **Loyal Frequent** | 681 (17%) | $4.68M (15%) | 33 days |
+| **Standard Loyal** | 2,227 (56%) | $11.80M (38%) | 47 days |
+| **At-Risk Standard** | 61 (1.5%) | $244K (0.8%) | 234 days |
+| **At-Risk High-Value** | 4 (0.1%) | $49K (0.2%) | 200 days |
+
+**Key Insight**: Their **Champions and High-Value Loyal segments (26% of customers) generate 46% of total revenue**. These 1,027 customers are the backbone of the business.
+
+#### The Warning Signs: At-Risk Customers
+
+While the numbers are small, **65 loyal customers (1.63%) are at risk of churning**, representing **$293,260 in revenue at risk**. Most critically, **4 high-value customers** haven't purchased in over 200 days, with **$49,000 in potential revenue loss**.
+
+**Action Required**: I recommend immediate personalized win-back campaigns for these 4 high-value at-risk customers could recover significant revenue with minimal effort.
+
+#### Channel Performance: Organic is the Champion-Maker
+
+My analysis of acquisition channels revealed a clear winner:
+
+| Channel | Loyal Customers | Champions | Champion Rate |
+|---------|----------------|-----------|---------------|
+| **Organic** | 1,121 | Highest | Best ROI |
+| Paid Search | 869 | Medium | Good volume |
+| Social | 708 | Medium | Broad reach |
+| Email | 664 | Medium | Engaged users |
+| Affiliate | 447 | Lower | Niche audience |
+| Retail Media | 191 | Lowest | Limited scale |
+
+**Critical Finding**: I found that **Organic brings 639% more Champions than Retail Media**. This suggests significant ROI opportunity in SEO and content marketing investments over paid retail placements.
+
+#### Product Insights: AI and Productivity Tools Lead
+
+The most purchased products by loyal customers reveal clear preferences:
+
+1. **Adobe Firefly Creative AI** - 3,810 purchases
+2. **Power BI Pro** - 3,807 purchases
+3. **Microsoft Copilot for Office** - 3,801 purchases
+4. **ChatGPT Team** - 3,217 purchases
+5. **Azure AI Studio** - 2,876 purchases
+
+**Vendor Performance**: Microsoft dominates with **$9.82M revenue** (31.5% of total), followed by AI Tools ($5.33M) and Adobe ($4.08M).
+
+**Insight**: I found that AI-powered tools are driving the majority of repeat purchases. I recommend they consider expanding AI product offerings and bundling strategies.
+
+#### Billing Cycle Analysis: Annual Plans Win
+
+The distribution of billing cycles shows a near-even split:
+- **Annual Plans**: 24K orders (49.57%)
+- **Monthly Plans**: 23K orders (48.46%)
+- **One-time**: 1K orders (1.96%)
+
+**However**, I found that annual subscribers demonstrate higher average revenue per customer and lower churn risk, making them more valuable despite similar order volumes.
+
+#### The Refund Problem: Billing Errors Need Attention
+
+**1,005 refunds** resulted in **$635,720 in revenue loss** (2.09% refund rate). Breaking down the reasons:
+
+| Reason | Count | % of Refunds |
+|--------|-------|--------------|
+| **Billing Error** | 105 | 29% |
+| Accidental Purchase | 94 | 26% |
+| Duplicate Order | 87 | 24% |
+| Service Dissatisfaction | 80 | 22% |
+
+**Critical Issue**: I identified that **billing errors are the #1 refund reason**, representing a preventable revenue leak.
+
+**Recommended Solutions**:
+1. **Audit billing system** for recurring technical issues
+2. **Implement pre-charge notifications** to customers
+3. **Add confirmation steps** before processing payments
+4. **Review payment gateway integration** for error patterns
+5. **Create automated alerts** for unusual billing patterns
+
+#### Geographic Distribution: US and UK Lead
+
+Customer concentration by country:
+1. **United States**: 1,202 customers, $2.67M revenue
+2. **United Kingdom**: 585 customers, $1.69M revenue
+3. **Canada**: 407 customers, $915K revenue
+4. **Australia**: 401 customers, $1.06M revenue
+5. **Germany**: 296 customers, $929K revenue
+
+**Opportunity**: I found strong presence in English-speaking markets, with potential for expansion in European and APAC regions.
+
+#### Discount Code Effectiveness
+
+**WELCOME10** is the most used discount code with **2,730 uses** and an average discount of **$62.73**. Other popular codes include:
+- LOYALTY15 (1,318 uses)
+- SAVE5 (1,932 uses)
+- BFCM10 (1,940 uses)
+- NEWCUST... (1,947 uses)
+
+**Insight**: I found that welcome and loyalty codes are driving repeat purchases, validating the promotional strategy.
+
+---
+
+### 🎯 Strategic Recommendations
+
+Based on my analysis, I recommend the following actions:
+
+#### 1. **Immediate: Win-Back Campaign for At-Risk High-Value Customers**
+- **Target**: 4 At-Risk High-Value customers
+- **Revenue at Risk**: $49,000
+- **Action**: Personalized outreach with exclusive offer (15-20% discount)
+- **Timeline**: Within 7 days
+- **Expected Recovery**: 50-75% ($24K-$37K)
+
+#### 2. **Short-term: Fix Billing Error Issues**
+- **Problem**: 105 refunds due to billing errors ($63K+ estimated loss)
+- **Action**: 
+  - Audit payment processing system
+  - Implement pre-charge email confirmations
+  - Add double-confirmation for high-value transactions
+- **Timeline**: 30 days
+- **Expected Impact**: Reduce refunds by 25-30%
+
+#### 3. **Medium-term: Double Down on Organic Acquisition**
+- **Finding**: Organic channel produces 639% more Champions than Retail Media
+- **Action**: 
+  - Increase SEO/content marketing budget by 20-30%
+  - Reduce Retail Media spend
+  - Focus content on AI tools and productivity software
+- **Timeline**: Next quarter
+- **Expected Impact**: Higher quality customer acquisition at lower CAC
+
+#### 4. **Medium-term: Promote Annual Billing**
+- **Finding**: Annual subscribers show higher value and retention
+- **Action**:
+  - Offer incentives for monthly-to-annual conversion (2 months free)
+  - Highlight annual savings prominently
+  - Create annual-only exclusive features or support tiers
+- **Timeline**: Next quarter
+- **Expected Impact**: Improved customer lifetime value and reduced churn
+
+#### 5. **Long-term: Expand AI Product Portfolio**
+- **Finding**: AI tools (Adobe Firefly, Microsoft Copilot, ChatGPT, Azure AI) dominate top purchases
+- **Action**:
+  - Partner with emerging AI vendors
+  - Create AI tool bundles
+  - Develop AI-focused loyalty rewards
+- **Timeline**: 6-12 months
+- **Expected Impact**: Capture growing AI software market share
+
+---
+
+### 📈 Key Performance Indicators to Monitor
+
+| KPI | Current Value | Target | Frequency |
+|-----|---------------|--------|-----------|
+| At-Risk Customer % | 1.63% | < 1.0% | Weekly |
+| Revenue at Risk | $293K | < $200K | Weekly |
+| High-Value Customer % | 25% | > 30% | Monthly |
+| Refund Rate | 2.09% | < 1.5% | Monthly |
+| Champion Segment % | 12% | > 15% | Quarterly |
+| YoY Revenue Growth | 18.48% | > 20% | Quarterly |
+| Organic Channel Share | 28% | > 35% | Quarterly |
+
+---
+
+### 💡 Summary: The Story in Numbers
+
+| Metric | Value | Insight |
+|--------|-------|---------|
+| **$31.20M** | Total Revenue | Strong base, growing YoY |
+| **4,000** | Loyal Customers | 100% repeat buyers |
+| **476** | Champions | 12% drive 23% of revenue |
+| **65** | At-Risk Customers | $293K revenue to protect |
+| **1,121** | Organic Customers | Best channel for quality |
+| **639%** | Organic vs Retail Media | Clear channel winner |
+| **105** | Billing Error Refunds | #1 preventable issue |
+| **$7,958** | Avg Customer Value | Healthy LTV foundation |
+
+**The Bottom Line**: This is a healthy subscription business with strong customer loyalty. I've identified opportunities in protecting at-risk high-value customers, fixing billing errors, optimizing channel mix toward organic, and capitalizing on the AI tools trend. Executing on these four priorities can unlock the next phase of growth.
+
+---
 
 ---
 
@@ -944,6 +1143,7 @@ The analysis is presented across 4 main pages:
 **Data Volume**:
 - Customer records: 4,000
 - Transaction records: 48,000
+- Product records: 101
 - Time period: 2024-2025
 - File size: ~8.1 MB (events table)
 
@@ -962,8 +1162,6 @@ Date Table (1) ────────────── (*) Events
 ### B. Python Code for RFM Calculation
 
 ```python
-import pandas as pd
-from datetime import datetime
 
 # Load data
 df_events = pd.read_csv('events.csv')
@@ -1102,11 +1300,10 @@ print("\n✅ RFM analysis complete!")
 ### D. Known Limitations
 
 1. **Data Timeframe**: Analysis covers only 2024-2025, limiting long-term trend analysis
-2. **Refund Handling**: Refunds are included with negative revenue; alternative approach could exclude them entirely
-3. **Currency Conversion**: FX rates are point-in-time; actual rates may have fluctuated
-4. **Geographic Precision**: Country centroids used instead of exact customer locations
-5. **Seasonality**: Limited data may not capture full seasonal patterns
-6. **Product Lifecycle**: New products may not have enough history for reliable patterns
+2. **Currency Conversion**: FX rates are point-in-time; actual rates may have fluctuated
+3. **Geographic Precision**: Country centroids used instead of exact customer locations
+4. **Seasonality**: Limited data may not capture full seasonal patterns
+5. **Product Lifecycle**: New products may not have enough history for reliable patterns
 
 ### E. Future Enhancements
 
@@ -1165,35 +1362,6 @@ print("\n✅ RFM analysis complete!")
 - Skok, D. "SaaS Metrics 2.0 – A Guide to Measuring and Improving What Matters." ForEntrepreneurs.
 - Zuora. "Subscription Economy Index." Annual reports on subscription business trends.
 
-**Power BI Resources**:
-- Microsoft Learn: Power BI Documentation
-- SQLBI: DAX Patterns and Best Practices
-- Enterprise DNA: Power BI Training
-
-### H. Change Log
-
-| Date | Version | Changes | Author |
-|------|---------|---------|--------|
-| 2025-01-XX | 1.0 | Initial RFM analysis and dashboard creation | [Your Name] |
-| TBD | 1.1 | Add predictive churn model | Planned |
-| TBD | 1.2 | Integrate customer satisfaction data | Planned |
-
-### I. Contact & Support
-
-**For Questions About This Analysis**:
-- Project Owner: [Your Name]
-- Email: [Your Email]
-- Department: [Analytics/Marketing/BI]
-
-**For Dashboard Access**:
-- Power BI Service: [Workspace URL]
-- Refresh Schedule: [Daily/Weekly]
-- Data Steward: [Name]
-
-**For Data Issues**:
-- Data Engineering Team: [Contact]
-- Source System Owners: [Contacts]
-
 ---
 
 ## Summary
@@ -1204,7 +1372,7 @@ This documentation provides a complete reference for the e-commerce customer loy
 ✅ **Why**: Identify loyal customers and channels that drive repeat purchases
 ✅ **How**: RFM scoring methodology with fixed ranges
 ✅ **Results**: 6 customer segments with actionable strategies
-✅ **Tools**: Python (RFM) → Power BI (Visualization)
+✅ **Tools**: Power Query (Cleaning and Transformation) → Python (RFM) → Power BI (Visualization)
 
 ### Key Takeaways
 
@@ -1226,6 +1394,6 @@ This documentation provides a complete reference for the e-commerce customer loy
 
 ---
 
-**Document Version**: 1.0  
+**Document Version**: 3.0  
 **Last Updated**: November 2025  
 **Status**: Complete
